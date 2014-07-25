@@ -1,3 +1,8 @@
 source "https://api.berkshelf.com"
+source "https://supermarket.getchef.com/"
 
 metadata
+
+cookbook "bcpc-hadoop", path: "../bcpc-hadoop"
+cookbook "bcpc", path: "../bcpc"
+cookbook "kafka", git: "https://github.com/mthssdrbrg/kafka-cookbook.git"

@@ -6,7 +6,7 @@ include_recipe "kafka::_configure"
 
 begin
   r = resources("service[kafka]")
-  r.notifies :create, "ruby_block[kafkaup]", :immediate
+  r.notifies :run, "ruby_block[kafkaup]", :immediate
 rescue Chef::Exceptions::ResourceNotFound
   Chef::Log.warn "Could not find service kafka to override!"
 end
@@ -33,5 +33,6 @@ ruby_block "kafkaup" do
     end
     Chef::Log.info("Kafka with znode #{brokerpath} is up and running.")
   end
-  action :nothing
+  action [:nothing, :run]
+
 end
