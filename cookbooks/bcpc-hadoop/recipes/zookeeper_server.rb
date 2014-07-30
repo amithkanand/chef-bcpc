@@ -1,4 +1,5 @@
 
+include_recipe 'bcpc-hadoop::zookeeper_config'
 include_recipe 'dpkg_autostart'
 
 dpkg_autostart "zookeeper-server" do
@@ -7,19 +8,20 @@ end
 
 package  "zookeeper-server" do
   action :upgrade
-  notifies :create, "template[/tmp/zkServer.sh]", :immediately
-  notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
+  notifies :create, "template[#{Chef::Config[:file_cache_path]}/zkServer.sh]", :immediately
 end
 
-template "/tmp/zkServer.sh" do
+template "#{Chef::Config[:file_cache_path]}/zkServer.sh" do
   source "hdp_zkServer.sh.orig.erb"
   mode 0644
+  action :nothing
+  notifies :create, "ruby_block[Compare_zookeeper_server_start_shell_script]", :immediately
 end
 
 ruby_block "Compare_zookeeper_server_start_shell_script" do
   block do
     require "digest"
-    orig_checksum=Digest::MD5.hexdigest(File.read("/tmp/zkServer.sh"))
+    orig_checksum=Digest::MD5.hexdigest(File.read("#{Chef::Config[:file_cache_path]}/zkServer.sh"))
     new_checksum=Digest::MD5.hexdigest(File.read("/usr/lib/zookeeper/bin/zkServer.sh"))
     if orig_checksum != new_checksum
       Chef::Application.fatal!("zookeeper-server:New version of zkServer.sh need to be created and used")
@@ -53,13 +55,9 @@ end
 bash "init-zookeeper" do
   code "service zookeeper-server init --myid=#{node[:bcpc][:node_number]}"
   creates "#{node[:bcpc][:zookeeper][:data_dir]}/myid"
-end
-
-file "#{node[:bcpc][:zookeeper][:data_dir]}/myid" do
-  content node[:bcpc][:node_number]
-  owner node[:bcpc][:zookeeper][:owner]
+  user node[:bcpc][:zookeeper][:owner]
   group node[:bcpc][:zookeeper][:group]
-  mode 0644
+  umask 0644
 end
 
 service "zookeeper-server" do

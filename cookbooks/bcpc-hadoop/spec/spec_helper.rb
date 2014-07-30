@@ -1,5 +1,6 @@
 require 'chefspec'
 require 'chefspec/berkshelf'
+require 'chef/config'
 
 RSpec.configure do | config |
   config.cookbook_path = "../../"
