@@ -73,14 +73,15 @@ Vagrant.configure("2") do |config|
     # Reconfigure chef-server
     bootstrap.vm.provision :file, source: json_file.join(","), destination: "/home/vagrant/chef-bcpc/environment/#{file_name}"
     bootstrap.vm.provision :shell, :inline => "sudo chef-server-ctl reconfigure"
-    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife node delete #{host_name}"
-    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife client delete #{host_name}"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife node delete #{host_name} -y"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife client delete #{host_name} -y"
     bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo rm -f .chef/*.pem"
     bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chef-client -E #{env_name} -c .chef/knife.rb"
-    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chown $(whoami):root .chef/$(hostname -f).pem"
-    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chmod 550 .chef/$(hostname -f).pem"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chown $(whoami):root .chef/#{host_name}.pem"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chmod 550 .chef/#{host_name}.pem"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; echo -e \"/\"admin\": false\ns/false/true\nw\nq\n\" | EDITOR=ed sudo -E knife client edit #{host_name} -c .chef/knife.rb -k /etc/chef-server/admin.pem -u admin"
     bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife environment from file environments/#{file_name}"
-    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; echo -e \"/\"admin\": false\ns/false/true\nw\nq\n\" | EDITOR=ed sudo -E knife client edit `hostname -f` -c .chef/knife.rb -k /etc/chef-server/admin.pem -u admin"
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife run_list add #{host_name} 'role[BCPC-Bootstrap]' -c .chef/knife.rb"
     bootstrap.vm.provision :shell, :inline => "sudo chef-client -c /home/vagrant/chef-bcpc/.chef/knife.rb"
 
   end
