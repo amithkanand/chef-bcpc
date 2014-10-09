@@ -71,9 +71,8 @@ Vagrant.configure("2") do |config|
     end
 
     # Reconfigure chef-server
-    bootstrap.vm.provision :file, source: json_file.join(","), destination: "/home/vagrant/chef-bcpc/environment/#{file_name}"
-
     bootstrap.vm.provision :shell, :inline => "sudo chef-server-ctl reconfigure"
+    bootstrap.vm.provision :file, source: json_file.join(","), destination: "/home/vagrant/chef-bcpc/environment/#{file_name}"
 
     # Chef provisioning
     bootstrap.vm.provision "chef_solo" do |chef|
