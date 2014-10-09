@@ -64,3 +64,25 @@ cron 'synchronize chef' do
 end
 
 package 'sshpass'
+
+directory "/etc/network/interface.d" do
+  action :create
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
+template "/etc/network/interfaces.d/iface-#{node[:bcpc][:bootstrap][:pxe_interface]}" do
+  source "network.iface.erb"
+  owner "root"
+  group "root"
+  mode 00644
+  variables(
+    :interface => node[:bcpc][:bootstrap][:pxe_interface],
+    :ip => node[:bcpc][:bootstrap][:server],
+    :netmask => node[:bcpc][:bootstrap][:netmask],
+    :gateway => node[:bcpc][:bootstrap][:gateway],
+    :metric => 100
+  )
+end
+
