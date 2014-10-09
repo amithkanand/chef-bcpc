@@ -87,6 +87,7 @@ Vagrant.configure("2") do |config|
       chef.provisioning_path="/home/vagrant/chef-bcpc/"
     end
 
+    bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo knife environment from file environments/#{env_name}.json -u admin -k /etc/chef-server/admin.pem"
     bootstrap.vm.provision :shell, :inline => "cd /home/vagrant/chef-bcpc; sudo chef-client -E #{env_name} -c .chef/knife.rb"
 
     # Chef provisioning
